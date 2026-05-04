@@ -2,7 +2,7 @@
   import { derived } from 'svelte/store'
   import GameCard from './GameCard.svelte'
   import { library, allGenres, allPlatforms } from '../stores/library.js'
-  import { statusFilter, genreFilter, platformFilter, favoritesOnly, sortBy } from '../stores/ui.js'
+  import { statusFilter, genreFilter, platformFilter, favoritesOnly, sortBy, searchOpen } from '../stores/ui.js'
 
   const STATUS_TABS = [
     { key: 'all',       label: 'All' },
@@ -81,6 +81,7 @@
         <p class="empty-icon">🎮</p>
         <h2>Your library is empty</h2>
         <p>Search for a game to get started.</p>
+        <button class="cta" onclick={() => searchOpen.set(true)}>+ Add your first game</button>
       {:else}
         <p class="empty-icon">🔍</p>
         <h2>No games match</h2>

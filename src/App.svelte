@@ -1,6 +1,8 @@
 <script>
   import { theme } from './lib/stores/theme.js'
+  import { searchOpen } from './lib/stores/ui.js'
   import LibraryView from './lib/components/LibraryView.svelte'
+  import SearchModal from './lib/components/SearchModal.svelte'
 
   function toggleTheme() {
     theme.update(t => t === 'dark' ? 'light' : 'dark')
@@ -13,14 +15,21 @@
       <span class="logo">🎮</span>
       <span class="app-name">GameLog</span>
     </div>
-    <button class="theme-btn" onclick={toggleTheme} aria-label="Toggle theme">
-      {$theme === 'dark' ? '☀️' : '🌙'}
-    </button>
+    <div class="header-actions">
+      <button class="add-btn" onclick={() => searchOpen.set(true)}>+ Add Game</button>
+      <button class="theme-btn" onclick={toggleTheme} aria-label="Toggle theme">
+        {$theme === 'dark' ? '☀️' : '🌙'}
+      </button>
+    </div>
   </header>
 
   <main>
     <LibraryView />
   </main>
+
+  {#if $searchOpen}
+    <SearchModal />
+  {/if}
 </div>
 
 <style>
@@ -85,6 +94,22 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  .header-actions { display: flex; align-items: center; gap: 0.6rem; }
+
+  .add-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .add-btn:hover { opacity: 0.85; }
 
   .theme-btn {
     background: var(--bg);
