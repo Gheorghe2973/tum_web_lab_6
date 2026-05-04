@@ -1,8 +1,9 @@
 <script>
   import { theme } from './lib/stores/theme.js'
-  import { searchOpen } from './lib/stores/ui.js'
+  import { searchOpen, selectedGame } from './lib/stores/ui.js'
   import LibraryView from './lib/components/LibraryView.svelte'
   import SearchModal from './lib/components/SearchModal.svelte'
+  import GameDetail from './lib/components/GameDetail.svelte'
 
   function toggleTheme() {
     theme.update(t => t === 'dark' ? 'light' : 'dark')
@@ -29,6 +30,10 @@
 
   {#if $searchOpen}
     <SearchModal />
+  {/if}
+
+  {#if $selectedGame}
+    <GameDetail />
   {/if}
 </div>
 
