@@ -1,5 +1,6 @@
 <script>
   import { theme } from './lib/stores/theme.js'
+  import LibraryView from './lib/components/LibraryView.svelte'
 
   function toggleTheme() {
     theme.update(t => t === 'dark' ? 'light' : 'dark')
@@ -18,7 +19,7 @@
   </header>
 
   <main>
-    <p class="placeholder">Your game library will appear here.</p>
+    <LibraryView />
   </main>
 </div>
 
@@ -54,9 +55,17 @@
     min-height: 100dvh;
   }
 
+  :global(select option) {
+    background: var(--panel-bg);
+    color: var(--text);
+  }
+
   .app { min-height: 100dvh; display: flex; flex-direction: column; }
 
   header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -86,7 +95,5 @@
     cursor: pointer;
   }
 
-  main { flex: 1; display: flex; align-items: center; justify-content: center; }
-
-  .placeholder { color: var(--text-muted); font-size: 1rem; }
+  main { flex: 1; }
 </style>
