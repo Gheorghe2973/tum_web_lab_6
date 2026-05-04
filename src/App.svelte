@@ -1,0 +1,92 @@
+<script>
+  import { theme } from './lib/stores/theme.js'
+
+  function toggleTheme() {
+    theme.update(t => t === 'dark' ? 'light' : 'dark')
+  }
+</script>
+
+<div class="app" data-theme={$theme}>
+  <header>
+    <div class="brand">
+      <span class="logo">🎮</span>
+      <span class="app-name">GameLog</span>
+    </div>
+    <button class="theme-btn" onclick={toggleTheme} aria-label="Toggle theme">
+      {$theme === 'dark' ? '☀️' : '🌙'}
+    </button>
+  </header>
+
+  <main>
+    <p class="placeholder">Your game library will appear here.</p>
+  </main>
+</div>
+
+<style>
+  :global(*, *::before, *::after) { box-sizing: border-box; }
+  :global(:root) { font-family: 'Inter', system-ui, sans-serif; }
+
+  :global([data-theme='dark']) {
+    --bg: #0f0f13;
+    --panel-bg: #16161e;
+    --text: #e2e2f0;
+    --text-muted: #5c5c7a;
+    --border: #252535;
+    --tag-bg: #1e1e2e;
+    --accent: #7c3aed;
+  }
+
+  :global([data-theme='light']) {
+    --bg: #f4f4f8;
+    --panel-bg: #ffffff;
+    --text: #1a1a2e;
+    --text-muted: #8888aa;
+    --border: #e0e0ec;
+    --tag-bg: #eeeef8;
+    --accent: #7c3aed;
+  }
+
+  :global(body) {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.2s, color 0.2s;
+    min-height: 100dvh;
+  }
+
+  .app { min-height: 100dvh; display: flex; flex-direction: column; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    background: var(--panel-bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand { display: flex; align-items: center; gap: 0.5rem; }
+  .logo { font-size: 1.3rem; }
+
+  .app-name {
+    font-size: 1.15rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .theme-btn {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0.35rem 0.55rem;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  main { flex: 1; display: flex; align-items: center; justify-content: center; }
+
+  .placeholder { color: var(--text-muted); font-size: 1rem; }
+</style>
