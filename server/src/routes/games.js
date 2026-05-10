@@ -3,6 +3,8 @@ export default async function gamesRoutes(app) {
   app.get('/games', {
     preHandler: app.authenticate,
     schema: {
+      tags: ['Games'],
+      summary: 'List all games (paginated)',
       querystring: {
         type: 'object',
         properties: {
@@ -31,6 +33,8 @@ export default async function gamesRoutes(app) {
   app.get('/games/:id', {
     preHandler: app.authenticate,
     schema: {
+      tags: ['Games'],
+      summary: 'Get a single game by ID',
       params: { type: 'object', properties: { id: { type: 'integer' } } },
     },
   }, async (request, reply) => {
@@ -51,6 +55,8 @@ export default async function gamesRoutes(app) {
   app.post('/games', {
     preHandler: app.requirePermission('WRITE'),
     schema: {
+      tags: ['Games'],
+      summary: 'Add a new game (requires WRITE permission)',
       body: {
         type: 'object',
         required: ['title'],
@@ -80,6 +86,8 @@ export default async function gamesRoutes(app) {
   app.put('/games/:id', {
     preHandler: app.requirePermission('WRITE'),
     schema: {
+      tags: ['Games'],
+      summary: 'Update a game (requires WRITE permission)',
       params: { type: 'object', properties: { id: { type: 'integer' } } },
       body: {
         type: 'object',
@@ -111,6 +119,8 @@ export default async function gamesRoutes(app) {
   app.delete('/games/:id', {
     preHandler: app.requirePermission('DELETE'),
     schema: {
+      tags: ['Games'],
+      summary: 'Delete a game (requires DELETE permission)',
       params: { type: 'object', properties: { id: { type: 'integer' } } },
     },
   }, async (request, reply) => {
