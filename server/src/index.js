@@ -2,15 +2,18 @@ import 'dotenv/config'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import supabase from './plugins/supabase.js'
+import jwtPlugin from './plugins/jwt.js'
+import tokenRoutes from './routes/token.js'
+import gamesRoutes from './routes/games.js'
 
 const app = Fastify({ logger: true })
 
 await app.register(cors, { origin: '*' })
+await app.register(jwtPlugin)
 
 app.decorate('supabase', supabase)
 
 app.get('/health', async (_, reply) => {
-  // Test plain fetch first to rule out network issues
   try {
     const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/games?select=id&limit=1`, {
       headers: {
@@ -21,14 +24,12 @@ app.get('/health', async (_, reply) => {
     const data = await res.json()
     return { status: 'ok', message: 'GameLog API is running', db: 'connected', rows: data.length ?? 0 }
   } catch (err) {
-    return reply.code(503).send({
-      status: 'error',
-      message: err.message,
-      cause: String(err.cause),
-      url: process.env.SUPABASE_URL,
-    })
+    return reply.code(503).send({ status: 'error', message: err.message })
   }
 })
+
+await app.register(tokenRoutes)
+await app.register(gamesRoutes)
 
 const PORT = process.env.PORT || 3000
 
