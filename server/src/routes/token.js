@@ -6,6 +6,9 @@ const ROLES = {
 export default async function tokenRoutes(app) {
   app.post('/token', {
     schema: {
+      tags: ['Auth'],
+      summary: 'Get a signed JWT for a given role',
+      security: [],
       body: {
         type: 'object',
         required: ['role'],
