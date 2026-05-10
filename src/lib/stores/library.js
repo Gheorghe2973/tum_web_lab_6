@@ -1,20 +1,48 @@
 import { writable, derived } from 'svelte/store'
+import { gamelogApi } from '../api/gamelog.js'
 
-function load() {
+function loadLocal() {
   try { return JSON.parse(localStorage.getItem('gameLibrary') || '[]') }
   catch { return [] }
 }
 
-const _lib = writable(load())
+const _lib = writable(loadLocal())
 _lib.subscribe(val => localStorage.setItem('gameLibrary', JSON.stringify(val)))
+
+async function syncFromApi() {
+  try {
+    const res = await gamelogApi.getGames()
+    if (!res?.data) return
+    _lib.set(res.data.map(g => ({
+      id: g.rawg_id ?? g.id,
+      _dbId: g.id,
+      name: g.name,
+      background_image: g.background_image,
+      genres: [],
+      platforms: [],
+      released: null,
+      status: g.status ?? 'backlog',
+      userRating: g.user_rating ?? 0,
+      favorite: g.favorite ?? false,
+      notes: '',
+      addedAt: Date.now(),
+    })))
+  } catch {
+    // fall back to localStorage if API is unavailable
+  }
+}
+
+syncFromApi()
 
 export const library = {
   subscribe: _lib.subscribe,
 
-  add(rawgGame, status = 'playing') {
+  async add(rawgGame, status = 'playing') {
+    let existing
     _lib.update(lib => {
-      if (lib.find(g => g.id === rawgGame.id)) return lib
-      return [...lib, {
+      existing = lib.find(g => g.id === rawgGame.id)
+      if (existing) return lib
+      const newGame = {
         id: rawgGame.id,
         name: rawgGame.name,
         background_image: rawgGame.background_image,
@@ -26,28 +54,74 @@ export const library = {
         favorite: false,
         notes: '',
         addedAt: Date.now(),
-      }]
+      }
+      return [...lib, newGame]
     })
+    if (!existing) {
+      try {
+        const created = await gamelogApi.addGame({
+          name: rawgGame.name,
+          background_image: rawgGame.background_image,
+          status,
+          rawg_id: rawgGame.id,
+        })
+        if (created?.id) {
+          _lib.update(lib =>
+            lib.map(g => g.id === rawgGame.id ? { ...g, _dbId: created.id } : g)
+          )
+        }
+      } catch { /* keep local copy */ }
+    }
   },
 
-  remove(id) {
-    _lib.update(lib => lib.filter(g => g.id !== id))
+  async remove(id) {
+    let dbId
+    _lib.update(lib => {
+      dbId = lib.find(g => g.id === id)?._dbId
+      return lib.filter(g => g.id !== id)
+    })
+    if (dbId) {
+      try { await gamelogApi.deleteGame(dbId) } catch { /* local already removed */ }
+    }
   },
 
-  setStatus(id, status) {
-    _lib.update(lib => lib.map(g => g.id === id ? { ...g, status } : g))
+  async setStatus(id, status) {
+    let dbId
+    _lib.update(lib => {
+      dbId = lib.find(g => g.id === id)?._dbId
+      return lib.map(g => g.id === id ? { ...g, status } : g)
+    })
+    if (dbId) {
+      try { await gamelogApi.updateGame(dbId, { status }) } catch { }
+    }
   },
 
-  setRating(id, rating) {
-    _lib.update(lib => lib.map(g => g.id === id ? { ...g, userRating: rating } : g))
+  async setRating(id, rating) {
+    let dbId
+    _lib.update(lib => {
+      dbId = lib.find(g => g.id === id)?._dbId
+      return lib.map(g => g.id === id ? { ...g, userRating: rating } : g)
+    })
+    if (dbId) {
+      try { await gamelogApi.updateGame(dbId, { user_rating: rating }) } catch { }
+    }
   },
 
   setNotes(id, notes) {
     _lib.update(lib => lib.map(g => g.id === id ? { ...g, notes } : g))
   },
 
-  toggleFavorite(id) {
-    _lib.update(lib => lib.map(g => g.id === id ? { ...g, favorite: !g.favorite } : g))
+  async toggleFavorite(id) {
+    let dbId, newFav
+    _lib.update(lib => {
+      const g = lib.find(g => g.id === id)
+      dbId = g?._dbId
+      newFav = !g?.favorite
+      return lib.map(g => g.id === id ? { ...g, favorite: newFav } : g)
+    })
+    if (dbId) {
+      try { await gamelogApi.updateGame(dbId, { favorite: newFav }) } catch { }
+    }
   },
 }
 
