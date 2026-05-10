@@ -15,6 +15,7 @@ async function syncFromApi() {
     if (!res?.data) return
     _lib.set(res.data.map(g => ({
       id: g.rawg_id ?? g.id,
+      rawg_id: g.rawg_id,
       _dbId: g.id,
       name: g.name,
       background_image: g.background_image,
@@ -44,6 +45,7 @@ export const library = {
       if (existing) return lib
       const newGame = {
         id: rawgGame.id,
+        rawg_id: rawgGame.id,
         name: rawgGame.name,
         background_image: rawgGame.background_image,
         genres: (rawgGame.genres ?? []).map(g => g.name),
@@ -75,14 +77,21 @@ export const library = {
   },
 
   async remove(id) {
-    let dbId
+    let dbId, rawgId
     _lib.update(lib => {
-      dbId = lib.find(g => g.id === id)?._dbId
+      const game = lib.find(g => g.id === id)
+      dbId = game?._dbId
+      rawgId = game?.rawg_id ?? id
       return lib.filter(g => g.id !== id)
     })
-    if (dbId) {
-      try { await gamelogApi.deleteGame(dbId) } catch { /* local already removed */ }
-    }
+    try {
+      if (!dbId) {
+        const res = await gamelogApi.getGames()
+        const match = res?.data?.find(g => g.rawg_id === rawgId)
+        dbId = match?.id
+      }
+      if (dbId) await gamelogApi.deleteGame(dbId)
+    } catch { /* local already removed */ }
   },
 
   async setStatus(id, status) {
