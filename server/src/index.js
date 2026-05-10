@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import swagger from '@fastify/swagger'
+import swaggerUi from '@fastify/swagger-ui'
 import supabase from './plugins/supabase.js'
 import jwtPlugin from './plugins/jwt.js'
 import tokenRoutes from './routes/token.js'
@@ -9,6 +11,32 @@ import gamesRoutes from './routes/games.js'
 const app = Fastify({ logger: true })
 
 await app.register(cors, { origin: '*' })
+
+await app.register(swagger, {
+  openapi: {
+    info: {
+      title: 'GameLog API',
+      description: 'REST API for managing your game backlog',
+      version: '1.0.0',
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    security: [{ bearerAuth: [] }],
+  },
+})
+
+await app.register(swaggerUi, {
+  routePrefix: '/docs',
+  uiConfig: { docExpansion: 'list' },
+})
+
 await app.register(jwtPlugin)
 
 app.decorate('supabase', supabase)
