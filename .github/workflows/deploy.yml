@@ -28,6 +28,7 @@ jobs:
       - run: npm run build
         env:
           VITE_RAWG_KEY: ${{ secrets.VITE_RAWG_KEY }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - uses: actions/configure-pages@v4
 
