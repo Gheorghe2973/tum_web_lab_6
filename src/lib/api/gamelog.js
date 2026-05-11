@@ -19,14 +19,9 @@ async function getToken() {
 
 async function request(path, options = {}) {
   const token = await getToken()
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      ...(options.headers || {}),
-    },
-  })
+  const headers = { Authorization: `Bearer ${token}`, ...(options.headers || {}) }
+  if (options.body) headers['Content-Type'] = 'application/json'
+  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers })
   if (res.status === 204) return null
   return res.json()
 }
